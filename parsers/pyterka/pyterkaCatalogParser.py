@@ -1,13 +1,10 @@
-#Почему-то не работает.
-
-from ...models.fileNames.pyterka import CatalogParserNames
-from ...parsers.pyterka.pyterkaParser import PyterkaParser
+from enums.pyterka import CatalogParserNames
+from .pyterkaParser import PyterkaParser
 
 class PyterkaCatalogParser(PyterkaParser):
     def __init__(self, start_url, category_url):
         self.category_url = category_url
         super().__init__(start_url)
-        self.fileNames = CatalogParserNames()
 
     def parse(self):
         response = self._get(self.category_url, headers=self._headers)
@@ -28,9 +25,5 @@ class PyterkaCatalogParser(PyterkaParser):
         for data in self.parse():
             self.save_to_json_file(
                 data,
-                data.get(fileName)
+                data.get(fileName.value)
             )
-
-if __name__ == '__main__':
-    parser = PyterkaCatalogParser('https://5ka.ru/api/v2/special_offers/', 'https://5ka.ru/api/v2/categories/')
-    parser.run()

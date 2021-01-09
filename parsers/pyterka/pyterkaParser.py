@@ -1,5 +1,3 @@
-#Почему-то не работает.
-
 from enum import Enum
 import json
 import requests
@@ -7,7 +5,7 @@ import time
 from datetime import datetime
 from requests.models import Response
 
-from models.fileNames.pyterka import *
+from enums.pyterka import PyterkaParserNames
 
 class PyterkaParser:
     _params = {
@@ -47,9 +45,9 @@ class PyterkaParser:
                 time.sleep(60)
     
     def run(self, fileName: PyterkaParserNames = PyterkaParserNames.productsId):
-        for products in self.parse(self.start_url):
+        for products in self.parse():
             for product in products:
-                self.save_to_json_file(product, product[fileName])
+                self.save_to_json_file(product, product[fileName.value])
     
     def parse(self):
         url = self.start_url
@@ -67,7 +65,3 @@ class PyterkaParser:
     def save_to_json_file(data: dict, file_name, dir_name = 'products'):
         with open(f'{dir_name}/{file_name}.json', 'w', encoding='UTF-8') as file:
             json.dump(data, file, ensure_ascii=False)
-
-if __name__ == '__main__':
-    parser = PyterkaParser('https://5ka.ru/api/v2/special_offers/', 'https://5ka.ru/api/v2/categories/')
-    parser.run()
