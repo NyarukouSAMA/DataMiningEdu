@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 from requests.models import Response
 
-from enums.pyterka import PyterkaParserNames
+from enums.pyterka import *
 
 class PyterkaParser:
     _params = {
@@ -65,3 +65,30 @@ class PyterkaParser:
     def save_to_json_file(data: dict, file_name, dir_name = 'products'):
         with open(f'{dir_name}/{file_name}.json', 'w', encoding='UTF-8') as file:
             json.dump(data, file, ensure_ascii=False)
+
+class PyterkaCatalogParser(PyterkaParser):
+    def __init__(self, start_url, category_url):
+        self.category_url = category_url
+        super().__init__(start_url)
+
+    def parse(self):
+        response = self._get(self.category_url, headers=self._headers)
+        for category in response.json():
+            data = {
+                'name': category['parent_group_name'],
+                'code': category['parent_group_code'],
+                'products': []
+            }
+            
+            self._params['categories'] = data.get('code')
+            for products in super().parse():
+                data["products"].extend(products)
+            
+            yield data
+    
+    def run(self, fileName: CatalogParserNames = CatalogParserNames.categoryCode):
+        for data in self.parse():
+            self.save_to_json_file(
+                data,
+                data.get(fileName.value)
+            )

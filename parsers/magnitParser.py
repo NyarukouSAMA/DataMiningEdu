@@ -25,9 +25,9 @@ class MagnitParse:
     __from_date_pat = r'\w*\s?(\d{1,2}\s\w+)\W\w*\s?\w*'
     __to_date_pat = r'\w*\s?\d{1,2}\s\w+\W\w*\s?(\d{1,2}\s\w+)'
 
-    def __init__(self, start_url, mongo_db):
+    def __init__(self, start_url, connectionString, collectionName):
         self.start_url = start_url
-        self.db = mongo_db
+        self.db = pymongo.MongoClient(connectionString)[collectionName]
 
     def __get_soup(self, url) -> bs4.BeautifulSoup:
         # todo предусмотреть внештатные ситуации
@@ -124,9 +124,3 @@ class MagnitParse:
         collection = self.db['magnit']
         collection.insert_one(data)
         print(1)
-
-
-if __name__ == '__main__':
-    database = pymongo.MongoClient('mongodb://localhost:27017')['gb_parse_12']
-    parser = MagnitParse("https://magnit.ru/promo/?geo=moskva", database)
-    parser.run()
