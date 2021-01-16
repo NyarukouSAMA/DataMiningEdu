@@ -1,6 +1,7 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Table, Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.sqltypes import DateTime
 
 Base = declarative_base()
 
@@ -16,29 +17,45 @@ class MixIdUrl:
     url = Column(String, nullable=False, unique=True)
 
 
-tag_post = Table(
-    'tag_post',
+tagPost = Table(
+    'tagPost',
     Base.metadata,
-    Column('post_id', Integer, ForeignKey('post.id')),
-    Column('tag_id', Integer, ForeignKey('tag.id'))
+    Column('postId', Integer, ForeignKey('post.id')),
+    Column('tagId', Integer, ForeignKey('tag.id'))
 )
 
 
 class Post(Base, MixIdUrl):
     __tablename__ = 'post'
+    externalId = Column(Integer, nullable=False)
     title = Column(String, nullable=False)
-    author_id = Column(Integer, ForeignKey('author.id'))
+    imgUrl = Column(String)
+    createdOn = Column(DateTime, nullable=False)
+    authorId = Column(Integer, ForeignKey('author.id'))
     author = relationship('Author')
-    tags = relationship('Tag', secondary=tag_post)
-
+    tags = relationship('Tag', secondary=tagPost)
 
 class Author(Base, MixIdUrl):
     __tablename__ = 'author'
+    externalId = Column(Integer, nullable=False)
     name = Column(String, nullable=False)
     posts = relationship('Post')
-
+    comments = relationship('Comment')
 
 class Tag(Base, MixIdUrl):
     __tablename__ = 'tag'
     name = Column(String, nullable=False)
-    posts = relationship('Post', secondary=tag_post)
+    posts = relationship('Post', secondary=tagPost)
+
+class Comment(Base):
+    __tablename__ = 'comment'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    text = Column(String, nullable=False)
+    authorId = Column(Integer, ForeignKey('author.id'))
+    externalId = Column(Integer, nullable=False)
+    referenceObjectId = Column(Integer, nullable=False)
+    referenceExternalObjectId = Column(Integer, nullable=False)
+    referenceObjectType = Column(String, nullable=False)
+    parentCommentId = Column(Integer, ForeignKey('comment.externalId'), nullable=True)
+    author = relationship('Author')
+    parentComment = relationship('Comment')
