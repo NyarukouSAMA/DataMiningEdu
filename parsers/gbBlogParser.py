@@ -7,7 +7,7 @@ from parsers.baseParser import BaseParser
 
 
 class GbParse(BaseParser):
-    __params = {
+    _params = {
         'commentable_type': 'Post',
     }
 
@@ -19,10 +19,11 @@ class GbParse(BaseParser):
         self.doneUrls.add(self.startUrl)
         self.database = database
         self.userUrlStaticPart = None
+        self._statusSuccess.append(206)
 
     def parseTask(self, url, callback):
         def wrap():
-            soup = self.__getSoup(url)
+            soup = self._getSoup(url)
             return callback(url, soup)
 
         return wrap
@@ -38,8 +39,8 @@ class GbParse(BaseParser):
         commentableId = commentTag.get('commentable-id') if commentTag else None
         comments = None
         if commentableId:
-            self.__params['commentable_id'] = int(commentableId)
-            response = self.__get(self.apiUrl, self.__params, headers=self.__headers)
+            self._params['commentable_id'] = int(commentableId)
+            response = self._get(self.apiUrl, self._params, headers=self._headers)
             comments = self.__getComments(response.json(), commentableId)
 
 
@@ -51,7 +52,7 @@ class GbParse(BaseParser):
             self.userUrlStaticPart = authorHref[:authorHref.rfind('/') + 1]
         
         postDateTime = soup.find('div', attrs={'class': 'blogpost-date-views'})
-        postFirstImg = next(postContent.find_all('img'), None).get('src') if postContent is not None else None
+        postFirstImg = next((imageTag for imageTag in postContent.find_all('img')), None).get('src') if postContent is not None else None
         if postDateTime is not None:
             postDateTime = postDateTime.find('time').get('datetime') if postDateTime.find('time') is not None else None
         data = {
@@ -101,13 +102,13 @@ class GbParse(BaseParser):
                     'text': commentJson['body'],
                     'externalId': commentJson['id'],
                     'referenceExternalObjectId': commentableId,
-                    'referenceObjectType': self.__params['commentable_type'],
+                    'referenceObjectType': self._params['commentable_type'],
                     'parentCommentId': commentJson['parent_id']
                 },
                 'author': {
-                    'url': self.userUrlStaticPart + commentJson['user.id'],
-                    'externalId': commentJson['user.id'],
-                    'name': commentJson['user.full_name']
+                    'url': self.userUrlStaticPart + str(commentJson['user']['id']),
+                    'externalId': commentJson['user']['id'],
+                    'name': commentJson['user']['full_name']
                 }
             }
             commentsData.append(commentData)

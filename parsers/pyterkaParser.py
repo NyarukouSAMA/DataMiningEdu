@@ -4,7 +4,7 @@ from parsers.baseParser import BaseParser
 from enums.pyterka import *
 
 class PyterkaParser(BaseParser):
-    __params = {
+    _params = {
         'records_per_page': 50,
     }
 
@@ -14,13 +14,13 @@ class PyterkaParser(BaseParser):
     def run(self, fileName: PyterkaParserNames = PyterkaParserNames.productsId):
         for products in self.parse():
             for product in products:
-                self.__saveToJsonFile(product, product[fileName.value])
+                self._saveToJsonFile(product, product[fileName.value])
     
     def parse(self):
         url = self.startUrl
-        params = self.__params
+        params = self._params
         while url:
-            response = self.__get(url, params=params, headers=self.__headers)
+            response = self._get(url, params=params, headers=self._headers)
             if params:
                 params = {}
             data: dict = response.json()
@@ -34,7 +34,7 @@ class PyterkaCatalogParser(PyterkaParser):
         super().__init__(startUrl)
 
     def parse(self):
-        response = self.__get(self.categoryUrl, headers=self.__headers)
+        response = self._get(self.categoryUrl, headers=self._headers)
         for category in response.json():
             data = {
                 'name': category['parent_group_name'],
@@ -42,7 +42,7 @@ class PyterkaCatalogParser(PyterkaParser):
                 'products': []
             }
             
-            self.__params['categories'] = data.get('code')
+            self._params['categories'] = data.get('code')
             for products in super().parse():
                 data["products"].extend(products)
             
@@ -50,7 +50,7 @@ class PyterkaCatalogParser(PyterkaParser):
     
     def run(self, fileName: CatalogParserNames = CatalogParserNames.categoryCode):
         for data in self.parse():
-            self.__saveToJsonFile(
+            self._saveToJsonFile(
                 data,
                 data.get(fileName.value)
             )

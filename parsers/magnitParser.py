@@ -34,7 +34,7 @@ class MagnitParse(BaseParser):
             self.save(product)
 
     def parse(self):
-        soup = self.__getSoup(self.startUrl)
+        soup = self._getSoup(self.startUrl)
         catalogMain = soup.find('div', attrs={'class': 'сatalogue__main'})
         for productTag in catalogMain.find_all('a', recursive=False):
             try:

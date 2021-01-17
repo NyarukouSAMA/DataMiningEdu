@@ -12,8 +12,12 @@ class Database:
         self.maker = sessionmaker(bind=engine)
 
     def getOrCreate(self, session, model, data):
-        dbModel = session.query(model).filter((hasattr(model, 'url') and model.url == data['url'])
-            or (hasattr(model, 'externalId') and model.externalId == data['externalId'])).first()
+        if hasattr(model, 'url') and hasattr(model, 'externalId'):
+            dbModel = session.query(model).filter(model.url == data['url'] or model.externalId == data['externalId']).first()
+        elif hasattr(model, 'url'):
+            dbModel = session.query(model).filter(model.url == data['url']).first()
+        else:
+            dbModel = session.query(model).filter(model.externalId == data['externalId']).first()
         if not dbModel:
             dbModel = model(**data)
         return dbModel
@@ -32,7 +36,7 @@ class Database:
 
         for commentData in data['commentsData']:
             author = self.getOrCreate(session, gbModels.Author, commentData['author'])
-            commentData['comment.referenceObjectId'] = post.id
+            commentData['comment']['referenceObjectId'] = post.id
             comment = self.getOrCreate(session, gbModels.Comment, commentData['comment'])
             comment.author = author
             session.add(comment)

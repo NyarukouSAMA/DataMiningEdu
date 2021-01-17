@@ -11,10 +11,10 @@ one-to-many - many-to-one
 many-to-many
 """
 
-
+#It's very interesting feature, but in ms sql for unique string column u should indicate length of the string
 class MixIdUrl:
     id = Column(Integer, primary_key=True, autoincrement=True)
-    url = Column(String, nullable=False, unique=True)
+    url = Column(String(2048), nullable=False, unique=True) 
 
 
 tagPost = Table(
@@ -52,10 +52,9 @@ class Comment(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     text = Column(String, nullable=False)
     authorId = Column(Integer, ForeignKey('author.id'))
-    externalId = Column(Integer, nullable=False)
+    externalId = Column(Integer, nullable=False, unique=True)
     referenceObjectId = Column(Integer, nullable=False)
     referenceExternalObjectId = Column(Integer, nullable=False)
     referenceObjectType = Column(String, nullable=False)
-    parentCommentId = Column(Integer, ForeignKey('comment.externalId'), nullable=True)
+    parentCommentId = Column(Integer, nullable=True)
     author = relationship('Author')
-    parentComment = relationship('Comment')
